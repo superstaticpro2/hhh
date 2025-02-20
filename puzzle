@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sci-Fi Number Puzzle</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: radial-gradient(circle, #000428, #004e92);
+            color: cyan;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+        }
+        .intro {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .grid {
+            display: none;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px cyan;
+        }
+        .tile {
+            width: 100px;
+            height: 100px;
+            background: rgba(0, 255, 255, 0.2);
+            border: 2px solid cyan;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .tile:hover {
+            transform: scale(1.1);
+        }
+        .empty {
+            background: transparent;
+            border: none;
+        }
+        .message {
+            display: none;
+            font-size: 30px;
+            color: red;
+            margin-top: 20px;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        button {
+            background: rgba(0, 255, 255, 0.3);
+            border: 2px solid cyan;
+            padding: 10px 20px;
+            font-size: 18px;
+            color: cyan;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: rgba(0, 255, 255, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <div class="intro" id="intro-text">Hi darling, ready to solve the puzzle?</div>
+    <button id="start-button" onclick="startPuzzle()">Start the Puzzle</button>
+    <div class="grid" id="puzzle-grid"></div>
+    <div class="message" id="completion-message">You did it, darling! ❤️</div>
+
+    <script>
+        const grid = document.getElementById("puzzle-grid");
+        const message = document.getElementById("completion-message");
+        const introText = document.getElementById("intro-text");
+        const startButton = document.getElementById("start-button");
+        let numbers = [1, 2, 3, 4, 5, 6, 7, 8, ""];
+
+        function startPuzzle() {
+            introText.style.display = "none";
+            startButton.style.display = "none";
+            grid.style.display = "grid";
+            shuffleTiles();
+        }
+
+        function createTiles() {
+            grid.innerHTML = "";
+            numbers.forEach((num, index) => {
+                let tile = document.createElement("div");
+                tile.classList.add("tile");
+                if (num === "") {
+                    tile.classList.add("empty");
+                }
+                tile.textContent = num;
+                tile.setAttribute("data-index", index);
+                tile.addEventListener("click", moveTile);
+                grid.appendChild(tile);
+            });
+            checkWin();
+        }
+
+        function shuffleTiles() {
+            do {
+                numbers.sort(() => Math.random() - 0.5);
+            } while (!isSolvable(numbers));
+            createTiles();
+        }
+
+        function moveTile(event) {
+            let clickedIndex = parseInt(event.target.getAttribute("data-index"));
+            let emptyIndex = numbers.indexOf("");
+            let validMoves = [
+                emptyIndex - 1, emptyIndex + 1, 
+                emptyIndex - 3, emptyIndex + 3
+            ];
+            
+            if (validMoves.includes(clickedIndex)) {
+                [numbers[emptyIndex], numbers[clickedIndex]] = [numbers[clickedIndex], numbers[emptyIndex]];
+                createTiles();
+            }
+        }
+
+        function checkWin() {
+            if (numbers.join() === "1,2,3,4,5,6,7,8,") {
+                grid.innerHTML = "";
+                grid.style.display = "none";
+                message.style.display = "block";
+            }
+        }
+
+        function isSolvable(array) {
+            let invCount = 0;
+            let arr = array.filter(n => n !== "");
+            for (let i = 0; i < arr.length; i++) {
+                for (let j = i + 1; j < arr.length; j++) {
+                    if (arr[i] > arr[j]) invCount++;
+                }
+            }
+            return invCount % 2 === 0;
+        }
+    </script>
+</body>
+</html>
